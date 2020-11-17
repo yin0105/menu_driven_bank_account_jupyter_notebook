@@ -1,4 +1,4 @@
-import re
+import re, sys
 from time import sleep
 from os import system, name 
 from datetime import datetime
@@ -24,7 +24,7 @@ def check_digits(num):
 
 def current_time():
     now = datetime.now()
-    return now.strftime("%Y-%m-%d, %H:%M:%S")
+    return now.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def create():
@@ -111,12 +111,12 @@ def show(file):
         print("=" * 40 + "\n")
         print(in_file.read())
     in_file.close()
-    sleep(3)
+    sleep(5)
 
     
 def changePINFun(currentPIN, cardNumber, file):
     clear()
-    print("\t" + "Change PIN number")
+    print("\tChange PIN number")
     print("=" * 40)
     pin_number = ""
     if input("\nEnter current PIN number: ") != currentPIN:
@@ -129,14 +129,13 @@ def changePINFun(currentPIN, cardNumber, file):
             pin_number = input('\nEnter new PIN number(4-digits): ')
             if check_digits(pin_number): break
         content = []
-        with open('cardNumber.txt', 'r') as in_file:
+        with open(file, 'r') as in_file:
             content = in_file.readlines()
         in_file.close()
         content[1] = "PIN number: " + pin_number + "\n"
-        with open('cardNumber.txt', 'w', newline="") as out_file:
+        with open(file, 'w', newline="") as out_file:
             out_file.write("".join(content))
         out_file.close()
-
     sleep(3)
 
     
@@ -144,44 +143,43 @@ def withdrawFun(money, cardNumber, file):
     amount = 0
     while True:
         clear()
-        print("\t" + "Withdraw amount of money")
+        print("\tWithdraw amount of money")
         print("=" * 40)
         amount = input('\nEnter the amount to withdraw: ')
         try:
             if float(amount) <= money: break
         except:
             pass
+        print("\nYou don't have enough money in your account.")
+        sleep(1)
     try:
-        amount = round(money - float(amount), 4)
-        with open('cardNumber.txt', 'r') as in_file:
+        new_money = round(money - float(amount), 4)
+        with open(file, 'r') as in_file:
             content = in_file.readlines()
         in_file.close()
-        content[4] = "money: " + str(amount) + "\n"
-        content = content[:5]
-        content.append("updated time: " + current_time() + "\n")
-        with open('cardNumber.txt', 'w', newline="") as out_file:
+        content[4] = "money: " + str(new_money) + "\n"
+        content.append(current_time() + ", $" + amount + " has been withdrawn.\n")
+        with open(file, 'w', newline="") as out_file:
             out_file.write("".join(content))
         out_file.close()
     except:
         pass
     sleep(3)
-    sleep(3)
 
     
 def depositFun(file, nMoney, cardNumber):
     clear()
-    print("\t" + "Deposit amount of money")
+    print("\tDeposit amount of money")
     print("=" * 40)
     amount = input('\nEnter the amount to be deposited: ')
     try:
-        amount = round(float(amount) + nMoney, 4)
-        with open('cardNumber.txt', 'r') as in_file:
+        new_money = round(float(amount) + nMoney, 4)
+        with open(file, 'r') as in_file:
             content = in_file.readlines()
         in_file.close()
-        content[4] = "money: " + str(amount) + "\n"
-        content = content[:5]
-        content.append("updated time: " + current_time() + "\n")
-        with open('cardNumber.txt', 'w', newline="") as out_file:
+        content[4] = "money: " + str(new_money) + "\n"
+        content.append(current_time() + ", $" + amount + " has been deposited.\n")
+        with open(file, 'w', newline="") as out_file:
             out_file.write("".join(content))
         out_file.close()
     except:
@@ -190,15 +188,63 @@ def depositFun(file, nMoney, cardNumber):
 
     
 def payBillFun(file, nMoney, cardNumber):
+    clear()
+    print("\t\tPay bills")
+    print("=" * 40)
+    bill_name = input('\nEnter the name of the bill: ')
+    account_number = input('\nEnter the account number of this bill: ')
+    amount = 0
+    
+    clear()
+    print("\t\tPay bills")
+    print("=" * 40)
+    amount = input('\nEnter the value of this bill: ')
+    deposit_amount = 0
+    
+    while float(amount) > nMoney + float(deposit_amount):
+        clear()
+        print("\t\tPay bills")
+        print("=" * 40)
+        print("\nYou don't have enough money in your account.")
+        deposit_amount = input('\nEnter the amount to be deposited (>=$' + str(round(float(amount) - nMoney, 4)) + '): ')
+    try:
+        new_money = round(nMoney + float(deposit_amount) - float(amount), 4)
+        print("2")
+        with open(file, 'r') as in_file:
+            content = in_file.readlines()
+        in_file.close()
+        print("3")
+        content[4] = "money: " + str(new_money) + "\n"
+        print("4")
+        if float(deposit_amount) > 0:
+            content.append(current_time() + ", $" + deposit_amount + " has been deposited.\n")
+        print("5")
+        content.append(current_time() + ", A bill with the name " + str(bill_name) + " and an account number of " + str(account_number) + " and a value of $" + str(amount) + " has been deducted from your account.\n")
+        print("6")
+        with open(file, 'w', newline="") as out_file:
+            out_file.write("".join(content))
+        out_file.close()
+    except:
+        print("error")
     sleep(3)
 
     
 def viewTransactionsFun(cardNumber):
+    clear()
+    print("\tView the last transactions")
+    print("=" * 40 + "\n")    
+    with open("cardNumber.txt", 'r') as in_file:
+        content = in_file.readlines()
+        if len(content) > 5:
+            print(content[-1])
+        else:
+            print("no transactions")
+    in_file.close()
     sleep(3)
 
     
 def terminateFun(file, nMoney, cardNumber):
-    pass
+    viewTransactionsFun(cardNumber)
 
 
 def start():
@@ -263,11 +309,11 @@ def main():
                 payBillFun(file, money, card_number)
             elif user_input == "6":
                 viewTransactionsFun(card_number)
-            elif user_input == "7":
-                terminateFun(file, money, card_number)
+            elif user_input == "7":                
                 break
         except:
             pass
 
+    terminateFun(file, money, card_number)
     
 main()
