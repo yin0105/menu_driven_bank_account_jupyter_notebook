@@ -1,4 +1,4 @@
-import re, sys
+import re
 from time import sleep
 from os import system, name 
 from datetime import datetime
@@ -209,23 +209,18 @@ def payBillFun(file, nMoney, cardNumber):
         deposit_amount = input('\nEnter the amount to be deposited (>=$' + str(round(float(amount) - nMoney, 4)) + '): ')
     try:
         new_money = round(nMoney + float(deposit_amount) - float(amount), 4)
-        print("2")
         with open(file, 'r') as in_file:
             content = in_file.readlines()
         in_file.close()
-        print("3")
         content[4] = "money: " + str(new_money) + "\n"
-        print("4")
         if float(deposit_amount) > 0:
             content.append(current_time() + ", $" + deposit_amount + " has been deposited.\n")
-        print("5")
         content.append(current_time() + ", A bill with the name " + str(bill_name) + " and an account number of " + str(account_number) + " and a value of $" + str(amount) + " has been deducted from your account.\n")
-        print("6")
         with open(file, 'w', newline="") as out_file:
             out_file.write("".join(content))
         out_file.close()
     except:
-        print("error")
+        pass
     sleep(3)
 
     
