@@ -1,4 +1,17 @@
 import re
+from time import sleep
+from os import system, name 
+
+
+def clear(): 
+    # for windows 
+    if name == 'nt': 
+        _ = system('cls') 
+  
+    # for mac and linux(here, os.name is 'posix') 
+    else: 
+        _ = system('clear') 
+
 
 def check_digits(num):
     if len(num) !=4: return False
@@ -14,74 +27,182 @@ def create():
     email = ""
     extra_service = []
     while True:
-        card_number = input('Enter card number(4-digits).')
+        clear()
+        card_number = input('Enter card number(4-digits): ')
         if check_digits(card_number): break
     
     while True:
-        pin_number = input('Enter PIN number(4-digits).')
+        clear()
+        pin_number = input('Enter PIN number(4-digits): ')
         if check_digits(pin_number): break
 
     while True:
-        email = input('Enter KFUPM email.')
+        clear()
+        email = input('Enter KFUPM email: ')
         regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]kfupm.edu.sa$'
         if(re.search(regex, email)):break
 
     while True:
+        clear()
         if len(extra_service) == 0:
-            e = input('Enter extra service.')
+            e = input('Enter extra service: ')
         else:
-            e = input('Enter extra service (enter "X" to end).')
-        if e.upper == "X":
+            e = input('Enter extra service (enter "X" to end): ')
+        if e.upper() == "X":
             if len(extra_service) > 0: break
         else:
             if e != "":
                 extra_service.append(e)
-            
+
+    # Write into cardNumber.txt
+    with open('cardNumber.txt', 'w') as out_file:
+        out_file.write("card number: " + card_number)
+        out_file.write("\nPIN number: " + pin_number)
+        out_file.write("\nemail: " + email)
+        out_file.write("\nextra service: " + "; ".join(extra_service))
+        out_file.write("\nmoney: 0")
+    
+    sleep(3)
+    login()
 
 
 def login():
-    pass
+    card_number = ""
+    pin_number = ""
+    try:
+        with open('cardNumber.txt', 'r') as in_file:
+            card_number = in_file.readline()
+            card_number = card_number[len("card number: "):-1]
+            pin_number = in_file.readline()
+            pin_number = pin_number[len("PIN number: "):-1]
+    except:
+        print("Warning: There are no registered users.")
+        sleep(2)
+        return False
+
+    while True:
+        clear()
+        print("\t" * 2 + "LOG IN")
+        print("=" * 40)
+        if input("\nEnter card number: ") == card_number: break
+
+    while True:
+        clear()
+        print("\t" * 2 + "LOG IN")
+        print("=" * 40)
+        if input("\nEnter PIN number: ") == pin_number: break
+
+    sleep(3)
+    return True
 
 
 def show(file):
-    pass
+    with open(file, 'r') as in_file:
+        clear()
+        print("\t" + "Show account information")
+        print("=" * 40 + "\n")
+        print(in_file.read())
+    sleep(3)
 
     
 def changePINFun(currentPIN, cardNumber, file):
-    pass
+    clear()
+    print("\t" + "Change PIN number")
+    print("=" * 40)
+    if input("\nEnter current PIN number: ") != currentPIN:
+        print("\nWarning: Wrong PIN number")
+    else:
+
+    sleep(3)
 
     
 def withdrawFun(money, cardNumber, file):
-    pass
+    sleep(3)
 
     
 def depositFun(file, nMoney, cardNumber):
-    pass
+    sleep(3)
 
     
 def payBillFun(file, nMoney, cardNumber):
-    pass
+    sleep(3)
 
     
 def viewTransactionsFun(cardNumber):
-    pass
+    sleep(3)
 
     
 def terminateFun(file, nMoney, cardNumber):
     pass
 
+
+def start():
+    while True:
+        clear()
+        user_input = input('Enter "L" to log in or "S" to sign up: ')
+        if user_input.upper() in ["L", "S"]: break
+
+        if user_input.upper() == "S":
+            create()
+        if login(): break
+            
+
+
+def main():
+    start()
+    card_number = ""
+    pin_number = ""
+    email = ""
+    extra_service = ""
+    money = 0
+    file = "cardNumber.txt"
     
+    while True:
+        with open('cardNumber.txt', 'r') as in_file:
+            card_number = in_file.readline()
+            card_number = card_number[len("card number: "):-1]
+            pin_number = in_file.readline()
+            pin_number = pin_number[len("PIN number: "):-1]
+            email = in_file.readline()
+            email = email[len("email: "):-1]
+            extra_service = in_file.readline()
+            extra_service = extra_service[len("extra service: "):-1]
+            money = in_file.readline()
+            try:
+                money = float(money[len("money: "):-1])
+            except:
+                pass
+        clear()
+        print("\t" + "Bank Account Progam")
+        print("=" * 40)
+        print("""\n1. Show account information
+2. Change PIN number
+3. Withdraw amount of money
+4. Deposit amount of money
+5. Pay bills
+6. View the last transactions
+7. Terminate a program\n""")
+        print("=" * 40)
+    
+        user_input = input("\nEnter Your Feature: ")
+        try:
+            if user_input == "1":
+                show(file)
+            elif user_input == "2":
+                changePINFun(pin_number, card_number, file)
+            elif user_input == "3":
+                withdrawFun(money, card_number, file)
+            elif user_input == "4":
+                depositFun(file, money, card_number)
+            elif user_input == "5":
+                payBillFun(file, money, card_number)
+            elif user_input == "6":
+                viewTransactionsFun(card_number)
+            elif user_input == "7":
+                terminateFun(file, money, card_number)
+                break
+        except:
+            pass
 
-
-while True:
-    login = input('Enter "L" to log in or "S" to sign up.')
-    if login.upper() in ["L", "S"]: break
-
-if login.upper() == "L":
-    # to login()
-    login()
-else:
-    # to create()
-    create()
-
-# print(str(check_digits("2445")))
+    
+main()
