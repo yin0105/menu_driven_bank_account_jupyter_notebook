@@ -1,6 +1,7 @@
 import re
 from time import sleep
 from os import system, name 
+from datetime import datetime
 
 
 def clear(): 
@@ -19,6 +20,11 @@ def check_digits(num):
         for j in range(i):
             if num[i] == num[j]:return False
     return True
+
+
+def current_time():
+    now = datetime.now()
+    return now.strftime("%Y-%m-%d, %H:%M:%S")
 
 
 def create():
@@ -60,7 +66,8 @@ def create():
         out_file.write("\nPIN number: " + pin_number)
         out_file.write("\nemail: " + email)
         out_file.write("\nextra service: " + "; ".join(extra_service))
-        out_file.write("\nmoney: 0")
+        out_file.write("\nmoney: 0\n")
+    out_file.close()
     
     sleep(3)
     login()
@@ -75,6 +82,7 @@ def login():
             card_number = card_number[len("card number: "):-1]
             pin_number = in_file.readline()
             pin_number = pin_number[len("PIN number: "):-1]
+        in_file.close()
     except:
         print("Warning: There are no registered users.")
         sleep(2)
@@ -102,6 +110,7 @@ def show(file):
         print("\t" + "Show account information")
         print("=" * 40 + "\n")
         print(in_file.read())
+    in_file.close()
     sleep(3)
 
     
@@ -109,18 +118,74 @@ def changePINFun(currentPIN, cardNumber, file):
     clear()
     print("\t" + "Change PIN number")
     print("=" * 40)
+    pin_number = ""
     if input("\nEnter current PIN number: ") != currentPIN:
         print("\nWarning: Wrong PIN number")
-    else:
+    else:        
+        while True:
+            clear()
+            print("\t" + "Change PIN number")
+            print("=" * 40)
+            pin_number = input('\nEnter new PIN number(4-digits): ')
+            if check_digits(pin_number): break
+        content = []
+        with open('cardNumber.txt', 'r') as in_file:
+            content = in_file.readlines()
+        in_file.close()
+        content[1] = "PIN number: " + pin_number + "\n"
+        with open('cardNumber.txt', 'w', newline="") as out_file:
+            out_file.write("".join(content))
+        out_file.close()
 
     sleep(3)
 
     
 def withdrawFun(money, cardNumber, file):
+    amount = 0
+    while True:
+        clear()
+        print("\t" + "Withdraw amount of money")
+        print("=" * 40)
+        amount = input('\nEnter the amount to withdraw: ')
+        try:
+            if float(amount) <= money: break
+        except:
+            pass
+    try:
+        amount = round(money - float(amount), 4)
+        with open('cardNumber.txt', 'r') as in_file:
+            content = in_file.readlines()
+        in_file.close()
+        content[4] = "money: " + str(amount) + "\n"
+        content = content[:5]
+        content.append("updated time: " + current_time() + "\n")
+        with open('cardNumber.txt', 'w', newline="") as out_file:
+            out_file.write("".join(content))
+        out_file.close()
+    except:
+        pass
+    sleep(3)
     sleep(3)
 
     
 def depositFun(file, nMoney, cardNumber):
+    clear()
+    print("\t" + "Deposit amount of money")
+    print("=" * 40)
+    amount = input('\nEnter the amount to be deposited: ')
+    try:
+        amount = round(float(amount) + nMoney, 4)
+        with open('cardNumber.txt', 'r') as in_file:
+            content = in_file.readlines()
+        in_file.close()
+        content[4] = "money: " + str(amount) + "\n"
+        content = content[:5]
+        content.append("updated time: " + current_time() + "\n")
+        with open('cardNumber.txt', 'w', newline="") as out_file:
+            out_file.write("".join(content))
+        out_file.close()
+    except:
+        pass
     sleep(3)
 
     
@@ -140,11 +205,10 @@ def start():
     while True:
         clear()
         user_input = input('Enter "L" to log in or "S" to sign up: ')
-        if user_input.upper() in ["L", "S"]: break
-
-        if user_input.upper() == "S":
-            create()
-        if login(): break
+        if user_input.upper() in ["L", "S"]:
+            if user_input.upper() == "S":
+                create()
+            if login(): break
             
 
 
@@ -172,6 +236,7 @@ def main():
                 money = float(money[len("money: "):-1])
             except:
                 pass
+        in_file.close()
         clear()
         print("\t" + "Bank Account Progam")
         print("=" * 40)
